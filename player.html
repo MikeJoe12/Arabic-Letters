@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arabic Letters Game - Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin: 10px auto;
+        }
+
+        .letter-box {
+            border: none;
+            padding: 10px;
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(145deg, #0066ff, #0052cc);
+            border-radius: 15px;
+            box-shadow: rgba(0, 0, 0, 0.2) 0px 5px 15px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .letter-box:active {
+            transform: scale(1.1);
+        }
+
+        .word-building {
+            width: 100%;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            min-height: 60px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            z-index: 2;
+            position: relative;
+			font-weight: bold;
+        }
+
+        .letters-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .control-button, .control-button-A {
+            padding: 12px 24px;
+            font-size: 24px;
+            cursor: pointer;
+            background: linear-gradient(145deg, #0066ff, #0052cc);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+        .control-button-D {
+            padding: 12px 24px;
+            font-size: 24px;
+            cursor: pointer;
+            background: linear-gradient(145deg, #ff0033, #cc0033);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+        .words-panel {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            margin-top: 15px;
+        }
+
+        .words-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 20px;
+            text-align: right;
+        }
+
+        .words-list li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-word {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+        }
+
+        #joinForm {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 300px;
+        }
+
+        #joinForm input {
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 16px;
+            width: 100%;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #gameArea {
+            display: none;
+            width: 100%;
+        }
+
+        .player-header {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: linear-gradient(145deg, #0066ff, #0052cc);
+            color: white;
+            border-radius: 10px;
+            font-size: 20px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            width: 100%;
+        }
+
+        .finish-button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            font-size: 16px;
+            background: linear-gradient(145deg, #28a745, #218838);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        h2 {
+            color: #0066ff;
+            text-align: center;
+            margin: 0 0 15px 0;
+            font-size: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .letter-box {
+                font-size: 52px;
+                padding: 5px;
+            }
+
+            .control-button {
+                padding: 10px;
+                font-size: 24px;
+            }
+            .control-button-D {
+                padding: 10px;
+                font-size: 14px;
+            }
+			.control-button-A {
+                padding: 10px;
+                font-size: 14px;
+            }
+            .words-list {
+                font-size: 24px;
+            }
+
+            .word-building {
+                font-size: 30px;
+                padding: 10px;
+				font-weight: bold;
+            }
+
+            .player-header {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 481px) {
+            .container {
+                max-width: 450px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Rest of the HTML remains the same -->
+    <div id="joinForm">
+        <h2>Join the game</h2>
+        <input type="text" id="playerNameInput" placeholder="Enter Name">
+        <button onclick="joinGame()" class="control-button">Join</button>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <div id="gameArea">
+        <div class="player-header">
+            Hello <span id="playerNameDisplay"></span>
+        </div>
+
+        <div class="game-container">
+            <div class="main-game">
+                <div class="container">
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                    <div class="letter-box" onclick="addLetter(this)"></div>
+                </div>
+                <div class="word-building" id="currentWord"></div>
+                <div class="letters-controls">
+                    <button onclick="clearWord()" class="control-button-D">Delete</button>
+                    <button onclick="addWordToList()" class="control-button-A">Add word</button>
+                </div>
+            </div>
+
+            <div class="words-panel">
+                <h2>الكلمات المكوّنة</h2>
+                <ul id="wordsList" class="words-list"></ul>
+                <button onclick="submitWords()" class="finish-button">Finish and Submit words</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript remains the same
+        let currentWord = "";
+        let playerId = null;
+        let eventSource = null;
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        async function joinGame() {
+            const playerName = document.getElementById('playerNameInput').value;
+            if (!playerName) {
+                showError('Please enter your name');
+                return;
+            }
+
+            try {
+                const response = await fetch('/player/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerName })
+                });
+                
+                const data = await response.json();
+                playerId = data.playerId;
+                
+                document.getElementById('playerNameDisplay').textContent = playerName;
+                document.getElementById('joinForm').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
+                
+                connectToGameUpdates();
+            } catch (error) {
+                showError('Error connecting');
+                console.error('Error:', error);
+            }
+        }
+
+        function connectToGameUpdates() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`/player/connect/${playerId}`);
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'letters_update') {
+                    updateLetters(data.letters);
+                }
+            };
+            
+            eventSource.onerror = (error) => {
+                console.error('SSE Error:', error);
+                eventSource.close();
+                setTimeout(connectToGameUpdates, 5000);
+            };
+        }
+
+        function updateLetters(letters) {
+            const boxes = document.getElementsByClassName('letter-box');
+            for (let i = 0; i < boxes.length; i++) {
+                if (letters[i]) {
+                    boxes[i].textContent = letters[i];
+                }
+            }
+        }
+
+        function addLetter(element) {
+            currentWord += element.textContent;
+            document.getElementById('currentWord').textContent = currentWord;
+        }
+
+        function clearWord() {
+            currentWord = "";
+            document.getElementById('currentWord').textContent = currentWord;
+        }
+
+        function addWordToList() {
+            if (currentWord.trim() === "") return;
+            
+            const wordsList = document.getElementById('wordsList');
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${currentWord}
+                <button class="delete-word" onclick="this.parentElement.remove()">×</button>
+            `;
+            wordsList.appendChild(li);
+            clearWord();
+        }
+
+        async function submitWords() {
+            const wordsList = document.getElementById('wordsList');
+            const words = Array.from(wordsList.children).map(li => li.textContent.trim());
+            
+            if (words.length === 0) {
+                showError('Please add at least one word');
+                return;
+            }
+
+            try {
+                await fetch('/player/submit-words', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        playerId,
+                        words
+                    })
+                });
+                
+                const submitButton = document.querySelector('.finish-button');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Words Sent';
+            } catch (error) {
+                console.error('Error submitting words:', error);
+                showError('Error sending words');
+            }
+        }
+
+        window.onbeforeunload = () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        };
+    </script>
+</body>
+</html>
