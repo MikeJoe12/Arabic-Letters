@@ -157,6 +157,33 @@
             text-align: center;
             margin-top: 0;
         }
+
+        .delete-word-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-word-btn:hover {
+            color: #c82333;
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .word-item {
+            position: relative;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+            padding-right: 35px;
+        }
     </style>
 </head>
 <body>
@@ -221,34 +248,37 @@
                 container.appendChild(submission);
             }
 
-            // Clean the words by removing the '×' character and any whitespace
-            const cleanedWords = words.map(word => word.replace(/[×x]/g, '').trim());
+            // Clean the words by removing any whitespace and the × character
+            const cleanedWords = words.map(word => word.replace(/[×]/g, '').trim());
             
             submission.innerHTML = `
                 <h3>${playerName}</h3>
-                <div style="list-style: none; padding: 0; margin: 0;">
+                <div class="words-container">
                     ${cleanedWords.map((word, index) => `
-                        <div style="padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 5px; text-align: center;">
-                            <span style="color: #0066ff; font-weight: bold; margin-right: 8px;">${index + 1}.</span>
-                            <span>${word}</span>
+                        <div class="word-item" data-word-index="${index}">
+                            <span class="word-number" style="color: #0066ff; font-weight: bold; margin-right: 8px;">
+                                ${index + 1}.
+                            </span>
+                            <span class="word-text">${word}</span>
+                            <span class="delete-word-btn" 
+                                  onclick="deleteWord('${playerName}', this.parentElement.dataset.wordIndex)" 
+                                  title="Delete word">×</span>
                         </div>
                     `).join('')}
                 </div>
             `;
         }
 
- async function shuffleLetters() {
+        async function shuffleLetters() {
             const shuffledLetters = shuffle([...arabicLetters]).slice(0, 9);
             
             try {
-                // Send to server first
                 await fetch('/host/update-letters', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ letters: shuffledLetters })
                 });
                 
-                // Then update display
                 const boxes = document.getElementsByClassName('letter-box');
                 for (let i = 0; i < boxes.length; i++) {
                     boxes[i].textContent = shuffledLetters[i];
@@ -280,6 +310,41 @@
                 document.getElementById('playerSubmissions').innerHTML = '';
             } catch (error) {
                 console.error('Error clearing players:', error);
+            }
+        }
+
+        async function deleteWord(playerName, wordIndex) {
+            try {
+                await fetch('/host/delete-word', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        playerName: playerName,
+                        wordIndex: parseInt(wordIndex) 
+                    })
+                });
+                
+                // Update the UI immediately
+                const submission = document.querySelector(`[data-player="${playerName}"]`);
+                if (submission) {
+                    const wordsContainer = submission.querySelector('.words-container');
+                    const wordToDelete = wordsContainer.querySelector(`[data-word-index="${wordIndex}"]`);
+                    if (wordToDelete) {
+                        wordToDelete.remove();
+                        
+                        // Update the remaining numbers
+                        const remainingWords = wordsContainer.querySelectorAll('.word-item');
+                        remainingWords.forEach((element, idx) => {
+                            const numberSpan = element.querySelector('.word-number');
+                            element.dataset.wordIndex = idx;
+                            if (numberSpan) {
+                                numberSpan.textContent = `${idx + 1}.`;
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting word:', error);
             }
         }
 
